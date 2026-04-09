@@ -1,0 +1,120 @@
+<section class="users-page">
+  <div class="users-page__header">
+    <div>
+      <p class="users-page__eyebrow">Gestion de usuarios</p>
+      <h1>Usuarios</h1>
+      <p class="users-page__subtitle">Mismo tema visual para administrar cuentas de forma mas clara.</p>
+    </div>
+
+    <button mat-raised-button class="users-page__button" (click)="nuevoUsuario()">
+      <mat-icon>add</mat-icon>
+      Nuevo Usuario
+    </button>
+  </div>
+
+  <mat-card class="users-shell">
+    <mat-card-content>
+      <div class="users-toolbar">
+        <mat-button-toggle-group
+          name="estadoFiltro"
+          [(ngModel)]="estadoFiltro"
+          (change)="filtrarPorEstado()"
+          appearance="standard"
+          class="users-toggle"
+        >
+          <mat-button-toggle value="activos">Activos</mat-button-toggle>
+          <mat-button-toggle value="noActivos">No Activos</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <mat-form-field appearance="outline" class="users-search">
+          <mat-label>Buscar usuario</mat-label>
+          <input matInput (keyup)="aplicarFiltroTabla($event)" #input>
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="tabla-container">
+        <table mat-table [dataSource]="dataListaUsuarios" class="custom-table">
+          <ng-container matColumnDef="nombreCompleto">
+            <th mat-header-cell *matHeaderCellDef>Nombre Completo</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="user-cell">
+                <div class="user-cell__avatar">
+                  <img *ngIf="element.foto" [src]="element.foto" alt="Foto del usuario" (error)="element.foto = null">
+                  <span *ngIf="!element.foto">{{ element.nombreCompleto?.charAt(0) || 'U' }}</span>
+                </div>
+                <div class="user-cell__copy">
+                  <strong>{{element.nombreCompleto}}</strong>
+                  <small>{{element.correo}}</small>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="correo">
+            <th mat-header-cell *matHeaderCellDef>Correo</th>
+            <td mat-cell *matCellDef="let element">{{element.correo}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="rolDescripcion">
+            <th mat-header-cell *matHeaderCellDef>Rol</th>
+            <td mat-cell *matCellDef="let element">{{element.rolDescripcion}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let element">
+              <span class="status-pill" [class.status-pill--inactive]="element.esActivo != 1">
+                {{element.esActivo == 1 ? 'Activo' : 'No activo'}}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="foto">
+            <th mat-header-cell *matHeaderCellDef>Imagen</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="image-pill">
+                <img *ngIf="element.foto" [src]="element.foto" alt="Imagen del usuario" (error)="element.foto = null">
+                <span *ngIf="!element.foto">Sin imagen</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Acciones</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="actions-cell">
+                <ng-container *ngIf="element.esActivo == 1; else noActivo">
+                  <button mat-icon-button class="action-button" (click)="editarUsuario(element)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-button action-button--danger" (click)="eliminarUsuario(element)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </ng-container>
+
+                <ng-template #noActivo>
+                  <button mat-icon-button class="action-button action-button--success" (click)="activarUsuario(element)">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-button action-button--danger" (click)="eliminarPermanenteUsuario(element)">
+                    <mat-icon>delete_forever</mat-icon>
+                  </button>
+                </ng-template>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnasTable"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnasTable"></tr>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell empty-state" colspan="6">No hay datos que coincidan con el filtro "{{input.value}}"</td>
+          </tr>
+        </table>
+
+        <mat-paginator class="paginador" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</section>

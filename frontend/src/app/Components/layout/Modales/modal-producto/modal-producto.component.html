@@ -1,0 +1,71 @@
+<mat-dialog-content style="width: 100%; padding: 24px;">
+  <form [formGroup]="formularioProducto" style="width: 100%;">
+  
+    <!-- Contenedor flexible con grid para mejor distribución -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+
+      <!-- Campo: Nombre -->
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput autocomplete="off" formControlName="nombre">
+        <mat-icon matSuffix>label</mat-icon>
+      </mat-form-field>
+
+      <!-- Campo: Categoría -->
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="idCategoria">
+          <mat-option *ngFor="let item of listaCategorias" [value]="item.idCategoria">
+            {{ item.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>category</mat-icon>
+      </mat-form-field>
+
+      <!-- Campo: Stock -->
+      <mat-form-field appearance="outline">
+        <mat-label>Stock</mat-label>
+        <input matInput type="number" autocomplete="off" formControlName="stock">
+        <mat-icon matSuffix>inventory</mat-icon>
+      </mat-form-field>
+
+      <!-- Campo: Precio -->
+      <mat-form-field appearance="outline">
+        <mat-label>Precio</mat-label>
+        <input matInput autocomplete="off" formControlName="precio">
+        <mat-icon matSuffix>attach_money</mat-icon>
+      </mat-form-field>
+
+      <!-- Campo: Estado (ocupa toda la fila si hay espacio) -->
+      <mat-form-field appearance="outline" style="grid-column: span 2;">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="esActivo">
+          <mat-option value="1">Activo</mat-option>
+          <mat-option value="0">No Activo</mat-option>
+        </mat-select>
+        <mat-icon matSuffix>toggle_on</mat-icon>
+      </mat-form-field>
+
+      <div style="grid-column: span 2;">
+        <label>Foto de Producto</label>
+        <input type="file" (change)="seleccionarImagen($event)" accept="image/*">
+        
+        <!-- Mostrar la imagen si ya tiene una URL -->
+        <img *ngIf="fotoUrl" [src]="fotoUrl" alt="Foto de perfil" 
+             style="width: 100px; height: 100px; margin-top: 8px;">
+      </div>
+
+    </div>
+  </form>
+</mat-dialog-content>
+
+<!-- Botones de acción con mejor alineación -->
+<mat-dialog-actions align="end" style="display: flex; justify-content: flex-end; gap: 10px; padding: 16px;">
+  <button mat-raised-button mat-dialog-close color="warn">
+    <mat-icon>arrow_back</mat-icon> Volver
+  </button>
+  <button mat-raised-button color="primary" [disabled]="formularioProducto.invalid" (click)="guardarEditar_Producto()">
+    <mat-icon>save</mat-icon> {{ datosProducto ? 'Guardar Cambios' : 'Agregar Producto' }}
+  </button>
+</mat-dialog-actions>
+

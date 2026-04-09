@@ -1,0 +1,111 @@
+<section class="dashboard-page">
+  <div class="dashboard-page__header">
+    <div>
+      <p class="dashboard-page__eyebrow">Resumen semanal</p>
+      <h1>Dashboard</h1>
+      <p class="dashboard-page__subtitle">El mismo tema visual aplicado al panel principal.</p>
+    </div>
+  </div>
+
+  <mat-card class="dashboard-container">
+    <mat-card-content>
+    
+
+      <mat-card class="kanban-card">
+        <mat-card-content>
+          <div class="kanban-card__header">
+            <div>
+              <span class="grafico-card__tag">Tareas</span>
+              <h2>Tablero de trabajo</h2>
+            </div>
+          </div>
+
+          <div class="tasks-live-total">
+            <div class="tasks-live-total__value">{{ totalTareasTiempoReal }}</div>
+            <div class="tasks-live-total__copy">
+              <strong>Total finalizadas en tiempo real</strong>
+              <span>{{ socketConectado ? 'Socket conectado' : 'Esperando socket...' }}</span>
+            </div>
+          </div>
+
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="kanban-column__header">
+                <h3>Para hacer</h3>
+                <span>{{ paraHacer.length }}</span>
+              </div>
+
+              <div
+                cdkDropList
+                id="para-hacer-list"
+                [cdkDropListData]="paraHacer"
+                [cdkDropListConnectedTo]="['en-proceso-list', 'finalizado-list']"
+                class="kanban-column__list"
+                (cdkDropListDropped)="drop($event, 'para-hacer')"
+              >
+                <article class="task-card" *ngFor="let tarea of paraHacer" cdkDrag>
+                  <div class="task-card__top">
+                    <span class="task-card__dot"></span>
+                    <span class="task-card__status">Para hacer</span>
+                  </div>
+                  <h4>{{ tarea.titulo_tarea }}</h4>
+                  <p>{{ tarea.descripcion }}</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="kanban-column__header">
+                <h3>En proceso</h3>
+                <span>{{ enProceso.length }}</span>
+              </div>
+
+              <div
+                cdkDropList
+                id="en-proceso-list"
+                [cdkDropListData]="enProceso"
+                [cdkDropListConnectedTo]="['para-hacer-list', 'finalizado-list']"
+                class="kanban-column__list"
+                (cdkDropListDropped)="drop($event, 'en-proceso')"
+              >
+                <article class="task-card task-card--progress" *ngFor="let tarea of enProceso" cdkDrag>
+                  <div class="task-card__top">
+                    <span class="task-card__dot"></span>
+                    <span class="task-card__status">En proceso</span>
+                  </div>
+                  <h4>{{ tarea.titulo_tarea }}</h4>
+                  <p>{{ tarea.descripcion }}</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="kanban-column__header">
+                <h3>Finalizado</h3>
+                <span>{{ finalizado.length }}</span>
+              </div>
+
+              <div
+                cdkDropList
+                id="finalizado-list"
+                [cdkDropListData]="finalizado"
+                [cdkDropListConnectedTo]="['para-hacer-list', 'en-proceso-list']"
+                class="kanban-column__list"
+                (cdkDropListDropped)="drop($event, 'finalizado')"
+              >
+                <article class="task-card task-card--done" *ngFor="let tarea of finalizado" cdkDrag>
+                  <div class="task-card__top">
+                    <span class="task-card__dot"></span>
+                    <span class="task-card__status">Finalizado</span>
+                  </div>
+                  <h4>{{ tarea.titulo_tarea }}</h4>
+                  <p>{{ tarea.descripcion }}</p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-card-content>
+  </mat-card>
+</section>

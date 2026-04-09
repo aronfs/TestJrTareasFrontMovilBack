@@ -1,0 +1,122 @@
+.task-modal {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px 0;
+  color: #1f1f1f;
+  box-sizing: border-box;
+}
+
+.task-modal__topbar {
+  padding: 6px 4px 20px;
+  border-bottom: 1px solid #ece5de;
+}
+
+.task-modal__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6c625b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.task-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 4px 12px;
+}
+
+.task-modal__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.task-modal__check {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #d4cbc1;
+  flex: 0 0 auto;
+  margin-top: 14px;
+}
+
+.task-modal__title-field {
+  width: 100%;
+}
+
+.task-modal__field {
+  width: 100%;
+}
+
+.task-modal__subtask {
+  align-self: flex-start;
+  border: none;
+  padding: 0;
+  min-width: auto;
+  color: #5f5a56;
+}
+
+.task-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 4px 8px;
+  border-top: 1px solid #ece5de;
+}
+
+.task-modal__back {
+  color: #625f5a;
+}
+
+:host ::ng-deep .task-modal .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+:host ::ng-deep .task-modal .mdc-notched-outline__leading,
+:host ::ng-deep .task-modal .mdc-notched-outline__notch,
+:host ::ng-deep .task-modal .mdc-notched-outline__trailing {
+  border-color: #e6ddd4 !important;
+}
+
+:host ::ng-deep .task-modal .mat-mdc-text-field-wrapper {
+  background: #fff;
+  border-radius: 18px !important;
+}
+
+:host ::ng-deep .task-modal .task-modal__title-field .mat-mdc-text-field-wrapper {
+  background: transparent;
+}
+
+:host ::ng-deep .task-modal .task-modal__title-field .mat-mdc-form-field-flex {
+  align-items: center;
+}
+
+:host ::ng-deep .task-modal .task-modal__title-field input.mat-mdc-input-element {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+:host ::ng-deep .task-modal textarea.mat-mdc-input-element {
+  resize: none;
+  line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .task-modal {
+    width: 100%;
+    padding: 0;
+  }
+
+  .task-modal__title-row {
+    gap: 12px;
+  }
+
+  .task-modal__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}

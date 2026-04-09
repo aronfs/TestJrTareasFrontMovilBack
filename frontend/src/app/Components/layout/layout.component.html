@@ -1,0 +1,49 @@
+<mat-toolbar class="app-toolbar">
+  <div class="app-toolbar__left">
+    <button mat-icon-button class="toolbar-icon-button" (click)="sidenav.toggle();">
+      <mat-icon class="icono-menu">menu</mat-icon>
+    </button>
+
+    <div>
+      <p class="app-toolbar__eyebrow">Sistema de ventas</p>
+      <h1 class="titulo">Mi Super Sistema Demo</h1>
+    </div>
+  </div>
+
+  <div class="app-toolbar__spacer"></div>
+
+  <div class="usuario-info">
+    <img *ngIf="fotoUsuario" [src]="fotoUsuario" alt="Foto de perfil" class="foto-perfil">
+    <span *ngIf="!fotoUsuario" class="icono-usuario">U</span>
+    <div class="usuario-info__copy">
+      <span>{{ correoUsuario }}</span>
+      <span class="rol">{{ rolUsuario }}</span>
+    </div>
+  </div>
+
+  <button mat-icon-button class="toolbar-icon-button toolbar-icon-button--logout" (click)="cerrarSesion()">
+    <mat-icon class="icono-menu">exit_to_app</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-sidenav-container class="app-shell">
+  <mat-sidenav #sidenav mode="side" class="app-sidenav">
+    <div class="app-sidenav__brand">
+      <span class="app-sidenav__tag">Navegacion</span>
+      <h2>Menu principal</h2>
+    </div>
+
+    <mat-nav-list>
+      <mat-list-item *ngFor="let menu of listaMenus" [routerLink]="menu.url" class="menu-item">
+        <mat-icon class="icono-menu">{{menu.icono}}</mat-icon>
+        <span class="label">{{menu.nombre}}</span>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="contenido-dark">
+    <div class="contenido">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

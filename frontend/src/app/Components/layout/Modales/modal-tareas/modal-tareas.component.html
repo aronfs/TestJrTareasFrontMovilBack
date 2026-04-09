@@ -1,0 +1,45 @@
+<section class="task-modal">
+  <div class="task-modal__topbar">
+    <div class="task-modal__breadcrumb">
+      <span># Mis tareas</span>
+      <span>/</span>
+      <span>{{ datosTareas ? obtenerEstadoVisual() : 'Para hacer' }}</span>
+    </div>
+  </div>
+
+  <form [formGroup]="formularioTareas" class="task-modal__form">
+    <div class="task-modal__title-row">
+      <span class="task-modal__check"></span>
+      <mat-form-field appearance="outline" class="task-modal__title-field">
+        <mat-label>Titulo de la tarea</mat-label>
+        <input matInput autocomplete="off" formControlName="titulo_Tarea">
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="task-modal__field">
+      <mat-label>Descripcion</mat-label>
+      <textarea matInput rows="4" autocomplete="off" formControlName="descripcion"></textarea>
+    </mat-form-field>
+
+    <button mat-stroked-button type="button" class="task-modal__subtask">
+      <mat-icon>add</mat-icon>
+      Anadir subtarea
+    </button>
+
+    <mat-form-field appearance="outline" class="task-modal__field task-modal__field--comment">
+      <mat-label>Comentar</mat-label>
+      <textarea matInput rows="3" autocomplete="off" formControlName="comentario"></textarea>
+      <mat-icon matSuffix>attach_file</mat-icon>
+    </mat-form-field>
+  </form>
+
+  <div class="task-modal__actions">
+    <button mat-button mat-dialog-close class="task-modal__back">
+      Volver
+    </button>
+    <button mat-flat-button color="primary" [disabled]="formularioTareas.invalid" (click)="guardarEditar_Tareas()">
+      <mat-icon>save</mat-icon>
+      {{ datosTareas ? 'Guardar cambios' : 'Guardar' }}
+    </button>
+  </div>
+</section>

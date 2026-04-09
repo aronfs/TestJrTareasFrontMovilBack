@@ -1,0 +1,160 @@
+image: docker:24.0.7
+
+variables:
+  DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: recursive
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+stages:
+  - install
+  - db-check
+  - build
+  - test
+
+install_dependencies:
+  stage: install
+  image: node:18
+  tags:
+    - DevOps
+    - SistemasVentas
+  script:
+    - echo "📦 Instalando dependencias del frontend"
+    - |
+      for i in {1..3}; do
+        npm ci --verbose && break || {
+          echo "❌ Falló intento $i de instalación. Reintentando en 5s..."; sleep 5;
+        }
+      done
+    - echo "✅ Dependencias instaladas"
+
+init_and_verify_db:
+  stage: db-check
+  image: postgres:17
+  services:
+    - name: postgres:17
+      alias: app-postgres
+  tags:
+    - DevOps
+    - SistemasVentas
+  variables:
+    POSTGRES_DB: DBVENTA
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: 1234
+  script:
+    - echo "⏳ Esperando conexión a Postgres..."
+    - |
+      for i in {1..15}; do
+        echo "Intento $i: chequeando conexión con Postgres..."
+        PGPASSWORD=$POSTGRES_PASSWORD psql -h app-postgres -U $POSTGRES_USER -d $POSTGRES_DB -c '\q' && break
+        sleep 5
+      done
+    - echo "🚀 Ejecutando init.sql en DBVENTA"
+    - |
+      if [ -f scripts/init.sql ]; then
+        PGPASSWORD=$POSTGRES_PASSWORD psql -h app-postgres -U $POSTGRES_USER -d $POSTGRES_DB -f scripts/init.sql && echo "✅ Base de datos inicializada y poblada"
+      else
+        echo "❌ init.sql no encontrado"; exit 1
+      fi
+    - echo "🔍 Verificando tablas y datos..."
+    - |
+      for table in rol menu menurol usuario categoria producto numerodocumento venta detalleventa;
+      do
+        echo "🔎 Verificando datos en tabla: $table"
+        PGPASSWORD=$POSTGRES_PASSWORD psql -h app-postgres -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT COUNT(*) AS total FROM $table;" || {
+          echo "⚠️ Tabla $table no existe o error en la consulta"
+          exit 1
+        }
+      done
+    - echo "🎉 Base de datos verificada correctamente 🎉"
+
+build_images:
+  stage: build
+  services:
+    - docker:24.0.7-dind
+  tags:
+    - DevOps
+  script:
+    - echo "🔐 Login al registry"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - echo "🐳 Build de imágenes"
+    - docker build -t "$CI_REGISTRY_IMAGE/frontend:latest" -f Dockerfile .
+    - echo "🐳 Verificando que frontend responda correctamente"
+    - docker run --rm -d -p 3000:3000 --name test-frontend "$CI_REGISTRY_IMAGE/frontend:latest"
+    - sleep 10
+    - curl -i http://localhost:3000 || echo "❌ No respondió el contenedor frontend"
+    - docker stop test-frontend
+    - docker build -t "$CI_REGISTRY_IMAGE/backend:latest" -f backend5/Dockerfile ./backend5
+    - docker push "$CI_REGISTRY_IMAGE/frontend:latest"
+    - docker push "$CI_REGISTRY_IMAGE/backend:latest"
+
+cypress_e2e:
+  stage: test
+  image: cypress/browsers:node18.12.0-chrome106-ff106
+  services:
+    - name: docker:24.0.7-dind
+      alias: docker
+    - name: postgres:17
+      alias: app-postgres
+      variables:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: 1234
+        POSTGRES_DB: DBVENTA
+    - name: $CI_REGISTRY_IMAGE/backend:latest
+      alias: app-backend
+      command: ["dotnet", "SistemaVenta.API.dll", "--urls", "http://0.0.0.0:5185"]
+    - name: $CI_REGISTRY_IMAGE/frontend:latest
+      alias: app-frontend
+  tags:
+    - DevOps
+    - SistemasVentas
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: 1234
+    POSTGRES_DB: DBVENTA
+    CYPRESS_BASE_URL: http://app-frontend:3000
+  before_script:
+    - echo "📦 Instalando dependencias para Cypress"
+    - npm ci
+    - echo "➕ Instalando cliente de PostgreSQL"
+    - apt-get update && apt-get install -y postgresql-client
+    - echo "🚀 Ejecutando init.sql en DBVENTA para Cypress"
+    - |
+      for i in {1..15}; do
+        echo "⌛ Intento $i: chequeando conexión con Postgres..."
+        PGPASSWORD=$POSTGRES_PASSWORD psql -h app-postgres -U $POSTGRES_USER -d $POSTGRES_DB -c '\q' && break
+        sleep 5
+      done
+    - |
+      if [ -f scripts/init.sql ]; then
+        PGPASSWORD=$POSTGRES_PASSWORD psql -h app-postgres -U $POSTGRES_USER -d $POSTGRES_DB -f scripts/init.sql && echo "✅ init.sql ejecutado correctamente"
+      else
+        echo "❌ init.sql no encontrado"; exit 1
+      fi
+    - echo "⌛ Esperando que frontend esté listo en $CYPRESS_BASE_URL..."
+    - |
+      for i in {1..15}; do
+        echo "⌛ Intento $i: probando $CYPRESS_BASE_URL"
+        if curl -s $CYPRESS_BASE_URL > /dev/null; then
+          echo "✅ Frontend accesible"
+          break
+        else
+          sleep 5
+        fi  
+        if [ "$i" -eq 15 ]; then
+          echo "❌ Frontend no respondió después de 15 intentos"
+          exit 1
+        fi
+      done
+  script:
+    - npx cypress run
+  artifacts:
+    when: always
+    paths:
+      - cypress/videos/
+      - cypress/screenshots/
+    expire_in: 1 week
